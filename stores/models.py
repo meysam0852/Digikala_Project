@@ -6,7 +6,7 @@ class Store(models.Model):
     owner=models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="store"
+        related_name="stores"
     )
     
     name = models.CharField(max_length=150)

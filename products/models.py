@@ -1,29 +1,30 @@
 from django.db import models
 from stores.models import Store
-# Create your models here.
+
 
 class Product(models.Model):
     store = models.ForeignKey(
         Store,
         on_delete=models.CASCADE,
         related_name="products"
-                              
     )
+
     name = models.CharField(max_length=200)
+
     description = models.TextField(blank=True)
-    
+
     price = models.DecimalField(
         max_digits=10,
-        decimal_places=2    
+        decimal_places=2
+    )
 
-)
-image = models.ImageField(
-    upload_to='products/',
-    blank=True,
-    null=True
-)
+    image = models.ImageField(
+        upload_to="products/",
+        blank=True,
+        null=True
+    )
 
-created_at=models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-def _str_(self):
-    return self.name
+    def __str__(self):
+        return self.name
