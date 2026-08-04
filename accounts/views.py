@@ -6,7 +6,7 @@ from .forms import RegisterForm, LoginForm
 
 def register_view(request):
     if request.user.is_authenticated:
-        return redirect('products:landing')
+        return redirect('products:product-list')
 
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -14,7 +14,7 @@ def register_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, f'خوش آمدید {user.username}')
-            return redirect('products:landing')
+            return redirect('products:product-list')
     else:
         form = RegisterForm()
 
@@ -22,7 +22,7 @@ def register_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('products:landing')
+        return redirect('products:product-list')
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -32,7 +32,7 @@ def login_view(request):
             if user:
                 login(request, user)
                 messages.success(request, f'خوش آمدید {user.username}')
-                return redirect('products:landing')
+                return redirect('products:product-list')
             messages.error(request, 'نام کاربری یا رمز عبور اشتباه است.')
     else:
         form = LoginForm()
@@ -42,7 +42,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.info(request, 'از حساب کاربری خود خارج شدید.')
-    return redirect('products:landing')
+    return redirect('products:product-list')
 
 @login_required
 def profile_view(request):
