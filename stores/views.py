@@ -1,8 +1,15 @@
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from .models import Store
 
+import json
+
+
+# ===========================
+# GET ALL STORES
+# ===========================
 
 def store_list(request):
     stores = list(
@@ -10,11 +17,17 @@ def store_list(request):
             "id",
             "name",
             "description",
+            "owner__username",
+            "created_at",
         )
     )
 
     return JsonResponse(stores, safe=False)
 
+
+# ===========================
+# GET ONE STORE
+# ===========================
 
 def store_detail(request, id):
     store = get_object_or_404(Store, id=id)
@@ -23,37 +36,54 @@ def store_detail(request, id):
         "id": store.id,
         "name": store.name,
         "description": store.description,
-        "owner":store.owner.username,
-        "created_at":store.created_at,
-        
+        "owner": store.owner.username,
+        "created_at": store.created_at,
     })
-    
-    
-def create_store(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
 
-    user = User.objects.first() 
+
+# ===========================
+# CREATE STORE
+# ===========================
+
+@require_http_methods(["POST"])
+def create_store(request):
+
+    data = json.loads(request.body)
+
+    owner = get_object_or_404(
+        User,
+        id=data["owner_id"]
+    )
 
     store = Store.objects.create(
-        owner=user,
-        name=request.POST.get("name"),
-        description=request.POST.get("description"),
+        owner=owner,
+        name=data["name"],
+        description=data.get("description", "")
     )
 
     return JsonResponse({
         "message": "Store created successfully",
-        "id": store.id,
+        "id": store.id
     })
-    
+
+
+# ===========================
+# UPDATE STORE
+# ===========================
+
+@require_http_methods(["PUT"])
 def update_store(request, id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
 
     store = get_object_or_404(Store, id=id)
 
-    store.name = request.POST.get("name", store.name)
-    store.description = request.POST.get("description", store.description)
+    data = json.loads(request.body)
+
+    store.name = data.get("name", store.name)
+    store.description = data.get(
+        "description",
+        store.description
+    )
+
     store.save()
 
     return JsonResponse({
@@ -61,11 +91,15 @@ def update_store(request, id):
     })
 
 
+# ===========================
+# DELETE STORE
+# ===========================
+
+@require_http_methods(["DELETE"])
 def delete_store(request, id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
 
     store = get_object_or_404(Store, id=id)
+
     store.delete()
 
     return JsonResponse({

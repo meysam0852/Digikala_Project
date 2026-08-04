@@ -1,8 +1,14 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_http_methods
+
 from .models import Product
 from stores.models import Store
 
+
+# ==========================
+# GET ALL PRODUCTS
+# ==========================
 
 def product_list(request):
     products = list(
@@ -11,12 +17,18 @@ def product_list(request):
             "name",
             "description",
             "price",
-            "store_id",
+            "image",
+            "store__id",
+            "store__name",
         )
     )
 
     return JsonResponse(products, safe=False)
 
+
+# ==========================
+# GET SINGLE PRODUCT
+# ==========================
 
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id)
@@ -26,38 +38,59 @@ def product_detail(request, id):
         "name": product.name,
         "description": product.description,
         "price": str(product.price),
-        "store": product.store.id,
+        "image": product.image.url if product.image else None,
+        "store": {
+            "id": product.store.id,
+            "name": product.store.name,
+        }
     })
 
 
-def create_product(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
+# ==========================
+# CREATE PRODUCT
+# ==========================
 
-    store = Store.objects.first()
+@require_http_methods(["POST"])
+def create_product(request):
+
+    store_id = request.POST.get("store_id")
+
+    store = get_object_or_404(Store, id=store_id)
 
     product = Product.objects.create(
         store=store,
         name=request.POST.get("name"),
         description=request.POST.get("description"),
         price=request.POST.get("price"),
+        image=request.FILES.get("image")
     )
 
     return JsonResponse({
         "message": "Product created successfully",
-        "id": product.id,
+        "product_id": product.id
     })
 
 
+# ==========================
+# UPDATE PRODUCT
+# ==========================
+
+@require_http_methods(["POST"])
 def update_product(request, id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
 
     product = get_object_or_404(Product, id=id)
 
-    product.name = request.POST.get("name", product.name)
-    product.description = request.POST.get("description", product.description)
-    product.price = request.POST.get("price", product.price)
+    if request.POST.get("name"):
+        product.name = request.POST.get("name")
+
+    if request.POST.get("description"):
+        product.description = request.POST.get("description")
+
+    if request.POST.get("price"):
+        product.price = request.POST.get("price")
+
+    if request.FILES.get("image"):
+        product.image = request.FILES.get("image")
 
     product.save()
 
@@ -66,9 +99,12 @@ def update_product(request, id):
     })
 
 
+# ==========================
+# DELETE PRODUCT
+# ==========================
+
+@require_http_methods(["POST"])
 def delete_product(request, id):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST request required"}, status=405)
 
     product = get_object_or_404(Product, id=id)
 
