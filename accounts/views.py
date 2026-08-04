@@ -34,10 +34,10 @@ def login_view(request):
                 messages.success(request, f'خوش آمدید {user.username}')
                 return redirect('products:landing')
             messages.error(request, 'نام کاربری یا رمز عبور اشتباه است.')
-        else:
-            form = LoginForm()
+    else:
+        form = LoginForm()
 
-        return render(request, 'accounts/login.html', {'form': form})
+    return render(request, 'accounts/login.html', {'form': form})
 
 def logout_view(request):
     logout(request)
