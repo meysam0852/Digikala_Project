@@ -11,9 +11,9 @@
     <p><strong>Balance:</strong> ${{ customer.balance }}</p>
 
     <div style="margin-top: 10px;">
-        <a href="{% url 'payment' %}" class="btn">💳 Increase Balance</a>
-        <a href="{% url 'cart' %}" class="btn">🛒 View Cart</a>
-        <a href="{% url 'order_history' %}" class="btn">📜 Order History</a>
+        <a href="{% url 'payments:payment_page' %}" class="btn">💳 Increase Balance</a>
+        <a href="{% url 'cart:cart-list' %}" class="btn">🛒 View Cart</a>
+        <a href="{% url 'orders:checkout' %}" class="btn">📜 Order History</a>
     </div>
 </div>
 {% endblock %}

@@ -1,21 +1,33 @@
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from .models import Product
 from stores.models import Store
 
 
-def product_list(request):
-    products = list(
-        Product.objects.values(
-            "id",
-            "name",
-            "description",
-            "price",
-            "store_id",
-        )
+def home_view(request):
+    products = Product.objects.select_related("store").all()
+
+    return render(
+        request,
+        "home.html",
+        {
+            "products": products,
+        },
     )
 
-    return JsonResponse(products, safe=False)
+
+
+
+def product_list(request):
+    products = Product.objects.select_related("store").all()
+
+    return render(
+        request,
+        "home.html",
+        {
+            "products": products,
+        },
+    )
 
 
 def product_detail(request, id):
@@ -25,10 +37,9 @@ def product_detail(request, id):
         "id": product.id,
         "name": product.name,
         "description": product.description,
-        "price": str(product.price),
-        "store": product.store.id,
+        "price": product.price,
+        "store": product.store.name if product.store else None,
     })
-
 
 def create_product(request):
     if request.method != "POST":

@@ -1,42 +1,57 @@
-from django.http import JsonResponse
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 
 from cart.models import CartItem
 from .models import Order, OrderItem
 
 
+@login_required
 def checkout(request):
-
-    user = User.objects.first()
-
-    cart_items = CartItem.objects.filter(customer=user)
-
-    if not cart_items.exists():
-        return JsonResponse({
-            "message": "Cart is empty"
-        })
-
-    total = 0
-
-    for item in cart_items:
-        total += item.product.price * item.quantity
-
-    order = Order.objects.create(
-        customer=user,
-        total_amount=total
+    cart_items = (
+        CartItem.objects
+        .select_related("Product")
+        .filter(customer=request.user)
     )
 
-    for item in cart_items:
-        OrderItem.objects.create(
-            order=order,
-            product=item.product,
-            quantity=item.quantity,
-            price=item.product.price
+    if not cart_items.exists():
+        return render(
+            request,
+            "cart.html",
+            {
+                "cart_items": cart_items,
+                "total": 0,
+                "message": "Your cart is empty.",
+            },
         )
 
-    cart_items.delete()
+    total = sum(
+        item.Product.price * item.quantity
+        for item in cart_items
+    )
 
-    return JsonResponse({
-        "message": "Checkout successful",
-        "order_id": order.id
-    })
+    if request.method == "POST":
+        order = Order.objects.create(
+            customer=request.user,
+            total_amount=total,
+        )
+
+        for item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.Product,
+                quantity=item.quantity,
+                price=item.Product.price,
+            )
+
+        cart_items.delete()
+
+        return redirect("payments:payment_page")
+
+    return render(
+        request,
+        "checkout.html",
+        {
+            "cart_items": cart_items,
+            "total": total,
+        },
+    )

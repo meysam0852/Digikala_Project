@@ -19,4 +19,4 @@ class CartItem(models.Model):
     quantity = models.PositiveBigIntegerField(default=1)
     
     def __str__(self):
-        return f"{self.customer.username} - {self.product.name}"
+        return f"{self.customer.username} - {self.Product.name}"
