@@ -50,9 +50,9 @@ def profile_view(request):
     is_seller = hasattr(user, 'seller_profile')
     customer_profile = user.customer_profile
     context = {
+        'customer': customer_profile,
         'user': user,
         'is_seller': is_seller,
-        'customer_profile': customer_profile,
     }
     return render(request, 'customer_panel.html', context)
 
