@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | DijiKala{% endblock %}
+
+{% block content %}
+<h2>✅ Checkout</h2>
+
+{% if cart_items %}
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.Product.name }}</td>
+                    <td>{{ item.Product.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>
+                        {% widthratio item.Product.price 1 item.quantity %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Total: {{ total }}</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn">
+            Confirm Order
+        </button>
+    </form>
+{% else %}
+    <p>Your cart is empty.</p>
+{% endif %}
+{% endblock %}
