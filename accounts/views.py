@@ -54,5 +54,5 @@ def profile_view(request):
         'is_seller': is_seller,
         'customer_profile': customer_profile,
     }
-    return render(request, 'accounts/profile.html', context)
+    return render(request, 'customer_panel.html', context)
 
